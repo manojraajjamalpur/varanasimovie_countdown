@@ -460,7 +460,7 @@ export default function AmbientSound() {
   };
 
   return (
-    <div id="ambient-audio-module" className="fixed bottom-6 right-6 z-50">
+    <div id="ambient-audio-module" className="fixed bottom-6 left-6 z-40">
       {/* Invisible YouTube DOM placeholder */}
       <div id="yt-player-element" className="absolute pointer-events-none opacity-0 w-[1px] h-[1px] -left-[9999px] -top-[9999px] overflow-hidden" />
 
