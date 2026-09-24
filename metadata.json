@@ -1,0 +1,6 @@
+{
+  "name": "Varanasi Movie Countdown",
+  "description": "An immersive, cinematic countdown website for S. S. Rajamouli's epic upcoming movie 'Varanasi', featuring real-time tracking, cast, and interactive lore.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
