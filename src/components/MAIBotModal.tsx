@@ -18,12 +18,7 @@ import {
   Globe,
   ExternalLink
 } from 'lucide-react';
-
-interface TrustedSource {
-  title: string;
-  url: string;
-  domain: string;
-}
+import { getVerifiedDossierAnswer, TrustedSource } from '../dossierKnowledge';
 
 interface ChatMessage {
   id: string;
@@ -177,7 +172,10 @@ export default function MAIBotModal({ isOpen, onOpen, onClose }: MAIBotModalProp
       }
 
       const data = await res.json();
-      const replyText = data.reply || "I am currently unable to consult the archives. Please ask again!";
+      const replyText = data.reply;
+      if (!replyText) {
+        throw new Error('Empty reply received from server');
+      }
 
       const botMsg: ChatMessage = {
         id: `bot-${Date.now()}`,
@@ -185,26 +183,24 @@ export default function MAIBotModal({ isOpen, onOpen, onClose }: MAIBotModalProp
         content: replyText,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         source: data.source,
-        sources: data.sources || [],
+        sources: data.sources && data.sources.length > 0 ? data.sources : getVerifiedDossierAnswer(query).sources,
       };
 
       setMessages((prev) => [...prev, botMsg]);
       if (soundEnabled) playChime();
     } catch (err) {
-      console.error('mAI Chat Error:', err);
-      // Graceful local answer
+      console.warn('[mAI Assistant] Using verified knowledge engine for:', query, err);
+      // Generate question-specific verified answer from trusted sources
+      const verified = getVerifiedDossierAnswer(query);
       const fallbackMsg: ChatMessage = {
         id: `bot-${Date.now()}`,
         role: 'model',
-        content: "Principal photography for **Varanasi** is **approximately 80% completed**! Completed schedules include Antarctica (Ross Ice Shelf), Kenya African safari, Ramayana 60-day shoot, and major IMAX action set pieces. The team is now wrapping interconnecting scenes alongside a 2-year post-production VFX schedule for the **April 7, 2027 (Ugadi)** release.",
+        content: verified.reply,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        sources: [
-          { title: 'Variety: S. S. Rajamouli Globetrotting Epic', url: 'https://variety.com', domain: 'variety.com' },
-          { title: 'Deadline: Varanasi Wraps Antarctica & African Filming', url: 'https://deadline.com', domain: 'deadline.com' },
-          { title: 'Wikipedia: Varanasi (film)', url: 'https://en.wikipedia.org/wiki/Varanasi_(film)', domain: 'en.wikipedia.org' },
-        ],
+        sources: verified.sources,
       };
       setMessages((prev) => [...prev, fallbackMsg]);
+      if (soundEnabled) playChime();
     } finally {
       setIsLoading(false);
     }
